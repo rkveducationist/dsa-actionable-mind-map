@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DSA Mind Map — Interview Focused</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #050810;
+    --surface:  #0d1120;
+    --card:     #111827;
+    --border:   #1e2d45;
+    --glow-1:   #00d4ff;
+    --glow-2:   #7c3aed;
+    --glow-3:   #10b981;
+    --glow-4:   #f59e0b;
+    --glow-5:   #ef4444;
+    --glow-6:   #ec4899;
+    --glow-7:   #6366f1;
+    --glow-8:   #14b8a6;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --line:     rgba(0,212,255,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND GRID ─────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ───────────────────────────────────────────── */
+  header {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 48px 24px 32px;
+  }
+
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--glow-1);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .header-badge::before { content: '◉'; font-size: 8px; animation: pulse 2s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--glow-1) 40%, var(--glow-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── STATS BAR ────────────────────────────────────────── */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+    padding: 16px 24px 32px;
+    position: relative; z-index: 10;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--glow-1);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── CANVAS AREA ─────────────────────────────────────── */
+  #canvas-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  #mind-canvas {
+    display: block;
+    width: 100%;
+  }
+
+  /* ── TOOLBAR ─────────────────────────────────────────── */
+  .toolbar {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 10px; align-items: center;
+    background: rgba(13,17,32,0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 18px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.06);
+  }
+
+  .toolbar button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .toolbar button:hover {
+    border-color: var(--glow-1);
+    color: var(--glow-1);
+    background: rgba(0,212,255,0.08);
+  }
+
+  .toolbar button.active {
+    background: var(--glow-1);
+    border-color: var(--glow-1);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .toolbar .sep {
+    width: 1px; height: 24px;
+    background: var(--border);
+  }
+
+  /* ── PANEL (Detail Sidebar) ───────────────────────────── */
+  #panel {
+    position: fixed;
+    top: 0; right: -420px;
+    width: 420px;
+    height: 100vh;
+    background: rgba(11,15,26,0.97);
+    backdrop-filter: blur(24px);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    transition: right 0.38s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+
+  #panel.open { right: 0; }
+
+  #panel-close {
+    position: absolute;
+    top: 18px; right: 18px;
+    width: 32px; height: 32px;
+    background: var(--border);
+    border: none;
+    border-radius: 50%;
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+
+  #panel-close:hover { background: var(--glow-5); }
+
+  #panel-header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+
+  #panel-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  #panel-hours {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  #panel-body { padding: 20px 24px; flex: 1; }
+
+  .topic-list { list-style: none; }
+
+  .topic-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+    padding: 12px 10px;
+  }
+
+  .topic-item:hover { background: rgba(255,255,255,0.04); }
+
+  .topic-item.done .topic-label { text-decoration: line-through; opacity: 0.4; }
+
+  .topic-check {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+
+  .topic-item.done .topic-check {
+    background: var(--glow-3);
+    border-color: var(--glow-3);
+    color: #000;
+  }
+
+  .topic-label {
+    font-size: 14px;
+    line-height: 1.5;
+    transition: opacity 0.2s;
+  }
+
+  .topic-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .panel-section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 10px;
+  }
+
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 999px;
+    height: 6px;
+    margin: 6px 0 16px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  .tip-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 16px;
+  }
+
+  .tip-box .tip-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .tip-box p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  /* ── PROGRESS OVERVIEW ────────────────────────────────── */
+  #progress-overview {
+    position: fixed;
+    top: 20px; left: 20px;
+    background: rgba(13,17,32,0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    z-index: 100;
+    min-width: 180px;
+  }
+
+  .ov-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .ov-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--glow-1);
+    line-height: 1;
+  }
+
+  .ov-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .ov-bar {
+    background: var(--border);
+    border-radius: 999px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .ov-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--glow-1), var(--glow-2));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── LEGEND ───────────────────────────────────────────── */
+  #legend {
+    position: fixed;
+    top: 20px; right: 20px;
+    background: rgba(13,17,32,0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 18px;
+    z-index: 100;
+    font-size: 11px;
+  }
+
+  .leg-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .leg-item {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-size: 12px;
+  }
+
+  .leg-item:hover { opacity: 0.7; }
+
+  .leg-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── TOOLTIP ──────────────────────────────────────────── */
+  #tooltip {
+    position: fixed;
+    background: rgba(13,17,32,0.96);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 300;
+    max-width: 220px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  #tooltip.show { opacity: 1; }
+  #tooltip strong { color: var(--glow-1); display: block; margin-bottom: 4px; font-size: 13px; }
+
+  /* ── SCROLL hint ──────────────────────────────────────── */
+  .scroll-hint {
+    text-align: center;
+    padding: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    position: relative; z-index: 10;
+    margin-bottom: 80px;
+  }
+
+  @media (max-width: 600px) {
+    #legend, #progress-overview { display: none; }
+    #panel { width: 100%; right: -100%; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-overview">
+  <div class="ov-title">Overall Progress</div>
+  <div class="ov-num" id="ov-pct">0%</div>
+  <div class="ov-sub" id="ov-sub">0 of 27 topics done</div>
+  <div class="ov-bar"><div class="ov-bar-fill" id="ov-fill" style="width:0%"></div></div>
+</div>
+
+<div id="legend">
+  <div class="leg-title">Priority</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#00d4ff"></div> Core Foundation</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div> ⭐ Important</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#10b981"></div> Conceptual Focus</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#ec4899"></div> Logic Builder</div>
+</div>
+
+<header>
+  <div class="header-badge">Interactive Mind Map</div>
+  <h1>Data Structures &<br/>Algorithms</h1>
+  <p>Interview Focused · 25 Hours · Click any module to explore</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">8</div><div class="stat-label">Modules</div></div>
+  <div class="stat"><div class="stat-num">25</div><div class="stat-label">Hours</div></div>
+  <div class="stat"><div class="stat-num">27</div><div class="stat-label">Topics</div></div>
+  <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Possibilities</div></div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="mind-canvas"></canvas>
+</div>
+
+<div class="scroll-hint">▲ Click any node to expand · Drag to pan · Scroll to zoom</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <button id="panel-close">✕</button>
+  <div id="panel-header">
+    <div class="panel-tag" id="panel-tag">Module</div>
+    <div id="panel-title">Module Name</div>
+    <div id="panel-hours">— hours</div>
+  </div>
+  <div id="panel-body">
+    <div class="panel-section-title">Progress</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="mod-progress-fill"></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="mod-progress-label"></div>
+
+    <div class="panel-section-title">Topics</div>
+    <ul class="topic-list" id="topic-list"></ul>
+
+    <div class="tip-box" id="tip-box">
+      <div class="tip-title" id="tip-title">💡 Trainer Tip</div>
+      <p id="tip-text"></p>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button onclick="resetView()">⟳ Reset View</button>
+  <div class="sep"></div>
+  <button onclick="zoomIn()">＋</button>
+  <button onclick="zoomOut()">－</button>
+  <div class="sep"></div>
+  <button onclick="expandAll()">Expand All</button>
+  <button onclick="collapseAll()">Collapse</button>
+  <div class="sep"></div>
+  <button onclick="clearProgress()" style="color:var(--glow-5)">Clear Progress</button>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip"><strong id="tt-title"></strong><span id="tt-body"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════════
+const MODULES = [
+  {
+    id: 0, label: "M1", title: "Complexity &\nProblem Solving",
+    hours: 2, color: "#00d4ff", priority: "Core Foundation",
+    icon: "⚙",
+    topics: [
+      { name: "Time Complexity", tip: "Always start by asking: how does the runtime grow as input grows?" },
+      { name: "Space Complexity", tip: "Ask: how much extra memory does my solution use?" },
+      { name: "Big-O Notation", tip: "O(1) > O(log n) > O(n) > O(n log n) > O(n²). Memorize this." },
+      { name: "Interview Thinking Pattern", tip: "Think aloud: clarify → brute force → optimize → code." },
+    ],
+    tip: "Start every session by asking: 'What is the Big-O of this?' — make it a habit from Day 1.",
+    angle: -90
+  },
+  {
+    id: 1, label: "M2", title: "Arrays +\nSearching",
+    hours: 5, color: "#f59e0b", priority: "⭐ Important",
+    icon: "▦",
+    topics: [
+      { name: "Sliding Window", tip: "Maintain a window of size k. Add new, remove old — O(n) magic." },
+      { name: "Two Pointer", tip: "Left and right pointers moving towards each other. Great for sorted arrays." },
+      { name: "Prefix Sum", tip: "Precompute cumulative sums. Range queries become O(1)." },
+      { name: "Kadane's Algorithm", tip: "Max subarray sum — keep a running max. Classic DP warm-up." },
+      { name: "Binary Search", tip: "On sorted data. Eliminate half the search space each step. O(log n)." },
+    ],
+    tip: "This module appears in 70% of coding interviews. Sliding Window and Binary Search are must-knows.",
+    angle: -45
+  },
+  {
+    id: 2, label: "M3", title: "Strings +\nHashing",
+    hours: 4, color: "#ec4899", priority: "Logic Builder",
+    icon: "⌨",
+    topics: [
+      { name: "Palindrome", tip: "Use two pointers from both ends. Check s[l] === s[r]." },
+      { name: "Anagram Check", tip: "Frequency map both strings. If maps match → anagram." },
+      { name: "Frequency Map", tip: "Hash map to count characters/elements. The #1 string tool." },
+      { name: "Subarray Sum", tip: "Combine prefix sum + hash map to find subarrays with target sum." },
+      { name: "Longest Consecutive Sequence", tip: "Use a Set. For each start, walk forward. O(n) total." },
+    ],
+    tip: "Strings + Hash Maps = interview gold. Practice these until they feel automatic.",
+    angle: 0
+  },
+  {
+    id: 3, label: "M4", title: "Recursion",
+    hours: 2, color: "#6366f1", priority: "Logic Builder",
+    icon: "↺",
+    topics: [
+      { name: "Basic Recursion", tip: "Every recursive solution needs a base case and a recursive call." },
+      { name: "Subsets (Concept)", tip: "Power set via recursion — include or exclude each element." },
+    ],
+    tip: "Draw the recursion tree for every problem. Visualization is the key to understanding recursion.",
+    angle: 45
+  },
+  {
+    id: 4, label: "M5", title: "Sorting\nConcepts",
+    hours: 2, color: "#10b981", priority: "Conceptual Focus",
+    icon: "↕",
+    topics: [
+      { name: "Bubble Sort — O(n²)", tip: "Swap adjacent pairs. Simple but slow. Good for understanding." },
+      { name: "Insertion Sort — O(n²)", tip: "Build sorted array one item at a time. Good for nearly-sorted data." },
+      { name: "Merge Sort — O(n log n)", tip: "Divide and conquer. Stable sort. Great for linked lists." },
+      { name: "Quick Sort — O(n log n)", tip: "Pick pivot, partition. Fast in practice. O(n²) worst case." },
+      { name: "Complexity Comparison", tip: "Interview: Why is Merge Sort preferred? → Stable + predictable O(n log n)." },
+    ],
+    tip: "Focus on understanding WHY each sort works, not memorizing code. Complexity comparison is the key interview question.",
+    angle: 90
+  },
+  {
+    id: 5, label: "M6", title: "Linked List",
+    hours: 3, color: "#14b8a6", priority: "Core Foundation",
+    icon: "⟶",
+    topics: [
+      { name: "Reverse Linked List", tip: "Three pointers: prev, curr, next. Flip arrows one by one." },
+      { name: "Cycle Detection", tip: "Floyd's algorithm — slow and fast pointer. If they meet → cycle." },
+      { name: "Remove Nth from End", tip: "Two pointers with n-gap. When fast hits end, slow is at target." },
+    ],
+    tip: "Draw boxes and arrows. Linked list problems are all about pointer manipulation — visualize first, code second.",
+    angle: 135
+  },
+  {
+    id: 6, label: "M7", title: "Stack &\nQueue",
+    hours: 3, color: "#7c3aed", priority: "Core Foundation",
+    icon: "≡",
+    topics: [
+      { name: "Valid Parentheses", tip: "Use a stack. Push open brackets, pop on close. Match?" },
+      { name: "Next Greater Element", tip: "Monotonic stack. Maintain a decreasing stack, pop when greater found." },
+      { name: "Sliding Window Maximum", tip: "Use a deque. Keep indices of useful elements only." },
+      { name: "Priority Queue Basics", tip: "Heap-backed queue. Min-heap or Max-heap. Top K problems." },
+    ],
+    tip: "The Monotonic Stack pattern alone appears in 15+ LeetCode problems. Master it.",
+    angle: 180
+  },
+  {
+    id: 7, label: "M8", title: "Trees",
+    hours: 4, color: "#f59e0b", priority: "⭐ Important",
+    icon: "🌳",
+    topics: [
+      { name: "Tree Traversals (BFS/DFS)", tip: "Inorder, Preorder, Postorder. BFS with queue. DFS with recursion/stack." },
+      { name: "BST Operations", tip: "Left < Root < Right. Search, insert, delete — all O(log n) average." },
+      { name: "Tree Height", tip: "max(height(left), height(right)) + 1. Classic recursion." },
+      { name: "Lowest Common Ancestor", tip: "If root equals p or q, return root. Recurse both sides." },
+      { name: "Validate BST", tip: "Pass min/max bounds through recursion. Every node must stay in range." },
+    ],
+    tip: "Trees are in almost every top-company interview. BFS/DFS and BST Validation are must-haves.",
+    angle: 225
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  CANVAS ENGINE
+// ═══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('mind-canvas');
+const ctx = canvas.getContext('2d');
+
+let W, H, cx, cy;
+let scale = 1, offsetX = 0, offsetY = 0;
+let dragging = false, dragStart = {x:0,y:0}, panStart = {x:0,y:0};
+let expandedNodes = new Set();
+let progress = loadProgress();
+let animFrame = 0;
+let hoveredNode = null;
+let activeModule = null;
+let allNodes = [];
+
+const ORBIT_R  = 210;
+const CENTER_R = 58;
+const MODULE_R = 48;
+const CHILD_R  = 26;
+const CHILD_OFFSET = 100;
+
+function resize() {
+  const wrap = document.getElementById('canvas-wrap');
+  W = wrap.clientWidth || window.innerWidth;
+  H = Math.max(620, window.innerHeight * 0.72);
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  cx = W / 2;
+  cy = H / 2;
+  buildNodes();
+}
+
+function buildNodes() {
+  allNodes = [];
+
+  // Center node
+  allNodes.push({
+    type: 'center', x: cx, y: cy, r: CENTER_R,
+    label: 'DSA', sublabel: '25 hrs',
+    color: '#00d4ff', id: 'center'
+  });
+
+  MODULES.forEach((mod, i) => {
+    const rad = (mod.angle - 90) * Math.PI / 180;
+    const mx = cx + ORBIT_R * Math.cos(rad);
+    const my = cy + ORBIT_R * Math.sin(rad);
+    const node = {
+      type: 'module', x: mx, y: my, r: MODULE_R,
+      mod, color: mod.color, id: 'mod-' + i,
+      angle: rad, ox: cx, oy: cy
+    };
+    allNodes.push(node);
+
+    // Child topic nodes
+    if (expandedNodes.has(i)) {
+      mod.topics.forEach((topic, j) => {
+        const spread = mod.topics.length;
+        const startAngle = rad - (spread - 1) * 0.22;
+        const childAngle = startAngle + j * 0.44;
+        const cr = MODULE_R + CHILD_OFFSET + (j % 2) * 18;
+        const tx = mx + cr * Math.cos(childAngle);
+        const ty = my + cr * Math.sin(childAngle);
+        allNodes.push({
+          type: 'topic', x: tx, y: ty, r: CHILD_R,
+          topic, modIdx: i, topicIdx: j,
+          modColor: mod.color,
+          id: `topic-${i}-${j}`,
+          parentX: mx, parentY: my
+        });
+      });
+    }
+  });
+}
+
+// ─── Draw ──────────────────────────────────────────────────────
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+
+  drawConnections();
+  drawNodes();
+
+  ctx.restore();
+  requestAnimationFrame(draw);
+}
+
+function drawConnections() {
+  allNodes.forEach(node => {
+    if (node.type === 'module') {
+      drawLine(node.ox, node.oy, node.x, node.y, node.color, 0.35, 2);
+    }
+    if (node.type === 'topic') {
+      drawLine(node.parentX, node.parentY, node.x, node.y, node.modColor, 0.25, 1.5);
+    }
+  });
+}
+
+function drawLine(x1, y1, x2, y2, color, alpha, width) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+
+  // Slight curve
+  const mx = (x1 + x2) / 2 + (y2 - y1) * 0.1;
+  const my = (y1 + y2) / 2 - (x2 - x1) * 0.1;
+  ctx.quadraticCurveTo(mx, my, x2, y2);
+
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = alpha;
+  ctx.lineWidth = width;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawNodes() {
+  allNodes.forEach(node => {
+    if (node.type === 'center')  drawCenterNode(node);
+    if (node.type === 'module')  drawModuleNode(node);
+    if (node.type === 'topic')   drawTopicNode(node);
+  });
+}
+
+function drawCenterNode(node) {
+  const t = Date.now() / 1000;
+  const pulse = 1 + Math.sin(t * 1.5) * 0.04;
+
+  // Outer glow rings
+  for (let i = 3; i > 0; i--) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, node.r * pulse + i * 14, 0, Math.PI * 2);
+    ctx.strokeStyle = '#00d4ff';
+    ctx.globalAlpha = 0.04 / i;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Background
+  const g = ctx.createRadialGradient(node.x - 8, node.y - 8, 4, node.x, node.y, node.r * pulse);
+  g.addColorStop(0, '#1a3a5c');
+  g.addColorStop(1, '#051228');
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, node.r * pulse, 0, Math.PI * 2);
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  // Border
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, node.r * pulse, 0, Math.PI * 2);
+  ctx.strokeStyle = '#00d4ff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Text
+  ctx.fillStyle = '#00d4ff';
+  ctx.font = 'bold 20px Syne, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('DSA', node.x, node.y - 6);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.fillText('25 hrs', node.x, node.y + 12);
+}
+
+function drawModuleNode(node) {
+  const isHovered = hoveredNode === node.id;
+  const isExpanded = expandedNodes.has(node.mod.id);
+  const isActive = activeModule === node.mod.id;
+  const r = node.r + (isHovered ? 5 : 0);
+  const t = Date.now() / 1000;
+
+  // Glow
+  if (isHovered || isActive) {
+    ctx.save();
+    ctx.shadowColor = node.color;
+    ctx.shadowBlur = 28;
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = node.color + '22';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Ring animation for expanded
+  if (isExpanded) {
+    const spin = t * 0.6;
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, r + 8, spin, spin + Math.PI * 1.5);
+    ctx.strokeStyle = node.color;
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Background
+  const g = ctx.createRadialGradient(node.x - 5, node.y - 5, 2, node.x, node.y, r);
+  g.addColorStop(0, node.color + '30');
+  g.addColorStop(1, '#0d1120');
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  // Border
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+  ctx.strokeStyle = node.color;
+  ctx.lineWidth = isActive ? 3 : 1.5;
+  ctx.stroke();
+
+  // Icon
+  ctx.fillStyle = node.color;
+  ctx.font = '18px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(node.mod.icon, node.x, node.y - 10);
+
+  // Label
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 9px Syne, sans-serif';
+  ctx.fillText(node.mod.label, node.x, node.y + 6);
+
+  // Hours badge
+  const doneTopics = (progress[node.mod.id] || []).length;
+  const total = node.mod.topics.length;
+  const badgeText = doneTopics + '/' + total;
+  ctx.fillStyle = doneTopics === total && total > 0 ? '#10b981' : node.color;
+  ctx.font = '8px JetBrains Mono, monospace';
+  ctx.fillText(badgeText, node.x, node.y + 18);
+
+  // Side label
+  const labelX = node.x + (node.x > cx ? r + 10 : -(r + 10));
+  const align = node.x > cx ? 'left' : 'right';
+  ctx.textAlign = align;
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.font = '10px Syne, sans-serif';
+
+  const lines = node.mod.title.split('\n');
+  lines.forEach((line, idx) => {
+    ctx.fillText(line, labelX, node.y - 5 + idx * 13);
+  });
+
+  ctx.fillStyle = node.color;
+  ctx.font = '9px JetBrains Mono, monospace';
+  ctx.fillText(node.mod.hours + 'h', labelX, node.y + 20);
+}
+
+function drawTopicNode(node) {
+  const isHovered = hoveredNode === node.id;
+  const isDone = (progress[node.modIdx] || []).includes(node.topicIdx);
+  const r = node.r + (isHovered ? 4 : 0);
+
+  // Background
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = isDone ? node.modColor + '30' : '#111827';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+  ctx.strokeStyle = isDone ? node.modColor : 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = isDone ? 2 : 1;
+  ctx.stroke();
+
+  // Checkmark or dot
+  if (isDone) {
+    ctx.fillStyle = node.modColor;
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✓', node.x, node.y);
+  } else {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.fill();
+  }
+
+  // Name
+  if (isHovered) {
+    ctx.fillStyle = node.modColor;
+    ctx.font = 'bold 9px Syne, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const words = node.topic.name.split(' ');
+    const line1 = words.slice(0, 2).join(' ');
+    const line2 = words.slice(2).join(' ');
+    ctx.fillText(line1, node.x, node.y + r + 4);
+    if (line2) ctx.fillText(line2, node.x, node.y + r + 15);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INTERACTION
+// ═══════════════════════════════════════════════════════════════
+function worldToCanvas(ex, ey) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (ex - rect.left - offsetX) / scale,
+    y: (ey - rect.top  - offsetY) / scale
+  };
+}
+
+function hitTest(ex, ey) {
+  const {x, y} = worldToCanvas(ex, ey);
+  for (let i = allNodes.length - 1; i >= 0; i--) {
+    const n = allNodes[i];
+    const dx = n.x - x, dy = n.y - y;
+    if (dx * dx + dy * dy <= (n.r + 8) * (n.r + 8)) return n;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousemove', e => {
+  const node = hitTest(e.clientX, e.clientY);
+  hoveredNode = node ? node.id : null;
+  canvas.style.cursor = node ? 'pointer' : (dragging ? 'grabbing' : 'grab');
+
+  const tt = document.getElementById('tooltip');
+  if (node && node.type === 'module') {
+    document.getElementById('tt-title').textContent = node.mod.title.replace('\n', ' ');
+    document.getElementById('tt-body').textContent = node.mod.hours + 'h · ' + node.mod.topics.length + ' topics · ' + node.mod.priority;
+    tt.style.left = (e.clientX + 16) + 'px';
+    tt.style.top  = (e.clientY - 10) + 'px';
+    tt.classList.add('show');
+  } else if (node && node.type === 'topic') {
+    document.getElementById('tt-title').textContent = node.topic.name;
+    document.getElementById('tt-body').textContent = node.topic.tip;
+    tt.style.left = (e.clientX + 16) + 'px';
+    tt.style.top  = (e.clientY - 10) + 'px';
+    tt.classList.add('show');
+  } else {
+    tt.classList.remove('show');
+  }
+
+  if (dragging) {
+    offsetX = panStart.x + (e.clientX - dragStart.x);
+    offsetY = panStart.y + (e.clientY - dragStart.y);
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  dragging = true;
+  dragStart = {x: e.clientX, y: e.clientY};
+  panStart  = {x: offsetX,   y: offsetY};
+  canvas.style.cursor = 'grabbing';
+});
+
+canvas.addEventListener('mouseup', e => {
+  const dist = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
+  dragging = false;
+  canvas.style.cursor = 'grab';
+
+  if (dist < 5) {
+    const node = hitTest(e.clientX, e.clientY);
+    if (node) handleClick(node);
+  }
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  offsetX = mx - (mx - offsetX) * delta;
+  offsetY = my - (my - offsetY) * delta;
+  scale = Math.min(3, Math.max(0.3, scale * delta));
+}, {passive: false});
+
+// Touch
+let lastTouch = null;
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (e.touches.length === 1) {
+    dragging = true;
+    dragStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+    panStart  = {x: offsetX, y: offsetY};
+    lastTouch = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+  }
+}, {passive: false});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1 && dragging) {
+    offsetX = panStart.x + (e.touches[0].clientX - dragStart.x);
+    offsetY = panStart.y + (e.touches[0].clientY - dragStart.y);
+  }
+}, {passive: false});
+
+canvas.addEventListener('touchend', e => {
+  if (e.changedTouches.length === 1 && lastTouch) {
+    const t = e.changedTouches[0];
+    const dist = Math.hypot(t.clientX - lastTouch.x, t.clientY - lastTouch.y);
+    if (dist < 8) {
+      const node = hitTest(t.clientX, t.clientY);
+      if (node) handleClick(node);
+    }
+  }
+  dragging = false; lastTouch = null;
+}, {passive: false});
+
+function handleClick(node) {
+  if (node.type === 'center') {
+    expandedNodes.clear();
+    buildNodes();
+    return;
+  }
+  if (node.type === 'module') {
+    const id = node.mod.id;
+    if (expandedNodes.has(id)) {
+      expandedNodes.delete(id);
+    } else {
+      expandedNodes.add(id);
+    }
+    buildNodes();
+    openPanel(node.mod);
+    activeModule = id;
+  }
+  if (node.type === 'topic') {
+    toggleTopic(node.modIdx, node.topicIdx);
+    buildNodes();
+    openPanel(MODULES[node.modIdx]);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PANEL
+// ═══════════════════════════════════════════════════════════════
+function openPanel(mod) {
+  activeModule = mod.id;
+  const panel = document.getElementById('panel');
+  const tag   = document.getElementById('panel-tag');
+  const title = document.getElementById('panel-title');
+  const hours = document.getElementById('panel-hours');
+  const list  = document.getElementById('topic-list');
+  const tip   = document.getElementById('tip-text');
+  const tipBox = document.getElementById('tip-box');
+  const fill  = document.getElementById('mod-progress-fill');
+  const label = document.getElementById('mod-progress-label');
+
+  tag.textContent = mod.priority;
+  tag.style.background = mod.color + '22';
+  tag.style.color = mod.color;
+  tag.style.borderColor = mod.color + '44';
+  tag.style.border = '1px solid ' + mod.color + '44';
+
+  title.textContent = mod.title.replace('\n', ' ');
+  title.style.color = mod.color;
+  hours.textContent = mod.hours + ' hours  ·  ' + mod.topics.length + ' topics';
+
+  const done = (progress[mod.id] || []).length;
+  const pct = Math.round(done / mod.topics.length * 100);
+  fill.style.width = pct + '%';
+  fill.style.background = `linear-gradient(90deg, ${mod.color}, ${mod.color}99)`;
+  label.textContent = done + ' of ' + mod.topics.length + ' topics completed (' + pct + '%)';
+  label.style.color = mod.color;
+
+  list.innerHTML = '';
+  mod.topics.forEach((topic, j) => {
+    const isDone = (progress[mod.id] || []).includes(j);
+    const li = document.createElement('li');
+    li.className = 'topic-item' + (isDone ? ' done' : '');
+    li.innerHTML = `
+      <div class="topic-check" style="${isDone ? 'background:' + mod.color + ';border-color:' + mod.color + ';color:#000' : ''}">
+        ${isDone ? '✓' : ''}
+      </div>
+      <div>
+        <div class="topic-label">${topic.name}</div>
+        <div class="topic-meta">${topic.tip.substring(0, 55)}…</div>
+      </div>`;
+    li.addEventListener('click', () => {
+      toggleTopic(mod.id, j);
+      openPanel(mod);
+      buildNodes();
+    });
+    list.appendChild(li);
+  });
+
+  tip.textContent = mod.tip;
+  tipBox.style.borderColor = mod.color + '44';
+  document.getElementById('tip-title').style.color = mod.color;
+
+  panel.classList.add('open');
+  updateOverview();
+}
+
+document.getElementById('panel-close').addEventListener('click', () => {
+  document.getElementById('panel').classList.remove('open');
+  activeModule = null;
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  PROGRESS
+// ═══════════════════════════════════════════════════════════════
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem('dsa-progress') || '{}'); } catch { return {}; }
+}
+
+function saveProgress() {
+  try { localStorage.setItem('dsa-progress', JSON.stringify(progress)); } catch {}
+}
+
+function toggleTopic(modIdx, topicIdx) {
+  if (!progress[modIdx]) progress[modIdx] = [];
+  const idx = progress[modIdx].indexOf(topicIdx);
+  if (idx > -1) progress[modIdx].splice(idx, 1);
+  else progress[modIdx].push(topicIdx);
+  saveProgress();
+  updateOverview();
+}
+
+function clearProgress() {
+  if (confirm('Clear all progress?')) {
+    progress = {};
+    saveProgress();
+    updateOverview();
+    buildNodes();
+    document.getElementById('panel').classList.remove('open');
+  }
+}
+
+function updateOverview() {
+  const total = MODULES.reduce((s, m) => s + m.topics.length, 0);
+  const done  = MODULES.reduce((s, m) => s + (progress[m.id] || []).length, 0);
+  const pct   = Math.round(done / total * 100);
+  document.getElementById('ov-pct').textContent = pct + '%';
+  document.getElementById('ov-sub').textContent = done + ' of ' + total + ' topics done';
+  document.getElementById('ov-fill').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TOOLBAR ACTIONS
+// ═══════════════════════════════════════════════════════════════
+function resetView() {
+  scale = 1; offsetX = 0; offsetY = 0;
+}
+
+function zoomIn()  { scale = Math.min(3,   scale * 1.2); }
+function zoomOut() { scale = Math.max(0.3, scale / 1.2); }
+
+function expandAll() {
+  MODULES.forEach(m => expandedNodes.add(m.id));
+  buildNodes();
+}
+
+function collapseAll() {
+  expandedNodes.clear();
+  activeModule = null;
+  document.getElementById('panel').classList.remove('open');
+  buildNodes();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+window.addEventListener('resize', () => { resize(); });
+resize();
+updateOverview();
+draw();
+</script>
+</body>
+</html>
